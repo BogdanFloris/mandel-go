@@ -2,17 +2,26 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	"html/template"
 	"log"
 	config "mandel-go/internal/common"
+	"mandel-go/internal/mandelbrot"
 	"net/http"
 	"path/filepath"
 	"time"
 )
 
-func test(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("Muie Mihnea!"))
+func indexHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	templateVars := make(map[string]interface{})
+	templateVars["Width"] = mandelbrot.Width
+	templateVars["Height"] = mandelbrot.Height
+	tmpl, err := template.ParseFiles("./web/index.html")
 	if err != nil {
-		panic("")
+		panic(err)
+	}
+	if err := tmpl.Execute(w, templateVars); err != nil {
+		panic(err)
 	}
 }
 
@@ -28,8 +37,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Load width and height
+	mandelbrot.Width = config.GetInt("WIDTH", 1280)
+	mandelbrot.Height = config.GetInt("HEIGHT", 1024)
+
+	// Initialize router and run server
 	router := mux.NewRouter()
-	router.HandleFunc("/", test)
+	router.HandleFunc("/", indexHandler)
+	router.HandleFunc("/mandelbrot", mandelbrot.HandleMandelbrot)
 
 	server := &http.Server{
 		Handler: router,
