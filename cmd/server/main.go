@@ -11,17 +11,19 @@ import (
 	"time"
 )
 
-func indexHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+func indexHandler(width int, height int) func(http.ResponseWriter, *http.Request) {
 	templateVars := make(map[string]interface{})
-	templateVars["Width"] = mandelbrot.Width
-	templateVars["Height"] = mandelbrot.Height
+	templateVars["Width"] = width
+	templateVars["Height"] = height
 	tmpl, err := template.ParseFiles("./web/index.html")
 	if err != nil {
 		panic(err)
 	}
-	if err := tmpl.Execute(w, templateVars); err != nil {
-		panic(err)
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := tmpl.Execute(w, templateVars); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -38,13 +40,13 @@ func main() {
 	}
 
 	// Load width and height
-	mandelbrot.Width = config.GetInt("WIDTH", 1280)
-	mandelbrot.Height = config.GetInt("HEIGHT", 1024)
+	width := config.GetInt("WIDTH", 1280)
+	height := config.GetInt("HEIGHT", 1024)
 
 	// Initialize router and run server
 	router := mux.NewRouter()
-	router.HandleFunc("/", indexHandler)
-	router.HandleFunc("/mandelbrot", mandelbrot.HandleMandelbrot)
+	router.HandleFunc("/", indexHandler(width, height))
+	router.HandleFunc("/mandelbrot", mandelbrot.HandleMandelbrot(width, height))
 
 	server := &http.Server{
 		Handler: router,
