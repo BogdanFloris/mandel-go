@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func indexHandler(width int, height int) func(http.ResponseWriter, *http.Request) {
+func handleIndex(width int, height int) func(http.ResponseWriter, *http.Request) {
 	templateVars := make(map[string]interface{})
 	templateVars["Width"] = width
 	templateVars["Height"] = height
@@ -42,16 +42,20 @@ func main() {
 	// Load width and height
 	width := config.GetInt("WIDTH", 1280)
 	height := config.GetInt("HEIGHT", 1024)
+	maxEscape := config.GetInt("MAX_ESCAPE", 64)
 
 	// Initialize router and run server
 	router := mux.NewRouter()
-	router.HandleFunc("/", indexHandler(width, height))
-	router.HandleFunc("/mandelbrot", mandelbrot.HandleMandelbrot(width, height))
+	router.HandleFunc("/", handleIndex(width, height))
+	router.HandleFunc("/mandelbrot", mandelbrot.Handle(
+		mandelbrot.Generator{Width: width, Height: height, MaxEscape: maxEscape},
+	))
 
 	server := &http.Server{
 		Handler: router,
-		Addr:    config.GetString("APP_HOST", "127.0.0.1") + ":" + config.GetString("APP_PORT", "8080"),
-		// Good practice: enforce timeouts for servers you create!
+		Addr: config.GetString(
+			"APP_HOST", "127.0.0.1") + ":" + config.GetString("APP_PORT", "8080",
+		),
 		WriteTimeout: config.GetDuration("WRITE_TIMEOUT", 15) * time.Second,
 		ReadTimeout:  config.GetDuration("READ_TIMEOUT", 15) * time.Second,
 	}
