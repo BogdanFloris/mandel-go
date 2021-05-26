@@ -6,24 +6,21 @@ import (
 	"sync"
 )
 
-const (
-	radius = 1.5
-	startX = 0.0
-	startY = 0.0
-)
-
 type Generator struct {
 	Width     int
 	Height    int
 	MaxEscape int
+	Radius    *float64
+	StartX    *float64
+	StartY    *float64
 }
 
 func (gen *Generator) generateMandelbrotImage() image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, gen.Width, gen.Height))
 	palette := Random.GetPalette(gen.MaxEscape)
 
-	viewCenter := complex(startX, startY)
-	zoomWidth := radius * 2
+	viewCenter := complex(*gen.StartX, *gen.StartY)
+	zoomWidth := *gen.Radius * 2
 	pixelWidth := zoomWidth / float64(gen.Width)
 	pixelHeight := pixelWidth
 	viewHeight := (float64(gen.Height) / float64(gen.Width)) * zoomWidth

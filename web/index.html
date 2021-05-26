@@ -3,14 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Mandelbrot Set</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        let startX = 0.0;
+        let startY = 0.0;
+        let radius = 2.0;
+
+        function zoomAt(width, height, x, y) {
+            const pixelSize = (radius * 2) / width;
+            const viewHeight = (height / width) * (radius * 2);
+            const left = (startX - radius) + (pixelSize / 2);
+            const top = (startY - (viewHeight / 2)) + (pixelSize / 2);
+            startX = left + x * pixelSize;
+            startY = top + y * pixelSize;
+            radius = radius / 4.0;
+        }
+    </script>
 </head>
 <body>
 
 <h1>Mandelbrot Set Visualizer</h1>
 
+<p>Click on the image to zoom in.</p>
 <div class="image">
-    <image class="mandel" src="/mandelbrot" width="{{.Width}}px" height="{{.Height}}px"></image>
+    <image id="mandel" src="/mandelbrot" width="{{.Width}}px" height="{{.Height}}px"></image>
 </div>
+
+<script>
+    const pic = document.getElementById("mandel");
+    pic.addEventListener("click", function (e) {
+        zoomAt(pic.width, pic.height, e.offsetX, e.offsetY)
+        pic.src = "/mandelbrot?startX=" + startX + "&startY=" + startY + "&radius=" + radius;
+    });
+</script>
 
 </body>
 </html>
