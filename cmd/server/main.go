@@ -54,8 +54,7 @@ func main() {
 	server := &http.Server{
 		Handler: router,
 		Addr: config.GetString(
-			"APP_HOST", "127.0.0.1") + ":" + config.GetString("APP_PORT", "8080",
-		),
+			"APP_HOST", "127.0.0.1") + ":" + config.GetString("APP_PORT", "8080"),
 		WriteTimeout: config.GetDuration("WRITE_TIMEOUT", 15) * time.Second,
 		ReadTimeout:  config.GetDuration("READ_TIMEOUT", 15) * time.Second,
 	}
